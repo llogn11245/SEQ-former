@@ -70,7 +70,7 @@ class SpecAugment(nn.Module):
         self.pS = pS
 
     def forward(self, x, x_len):
-
+        # x: (batch, freq, time)
         # Spec Augment
         if self.spec_augment:
         
@@ -88,7 +88,17 @@ class SpecAugment(nn.Module):
 
 # if __name__ == "__main__":
 #     # Example usage
-#     model = ConvDownsampling(d_in=128, d_out=64)
-#     x = torch.randn(32, 100, 128)  # (batch_size, seq_len, d_in)
+#     batch_size, seq_len, d_in = 32, 100, 128
+#     x = torch.randn(batch_size, seq_len, d_in)  # (batch_size, seq_len, d_in)
+    
+#     # Test ConvDownsampling
+#     model = ConvDownsampling(d_in=d_in, d_out=64)
 #     output = model(x)
-#     print(output.shape)  # Should be (32, 50, 64) after downsampling
+#     print("ConvDownsampling output shape:", output.shape)  # Should be (32, 50, 64) after downsampling
+    
+#     # Giả sử đầu vào cho SpecAugment là (batch, freq, time)
+#     x_spec = torch.randn(batch_size, 80, 120)  # ví dụ đặc trưng spectrogram
+#     x_len = torch.full((batch_size,), 120, dtype=torch.long)  # độ dài thực tế cho mỗi batch
+#     spec_aug = SpecAugment(spec_augment=True, mF=2, F=10, mT=2, pS=0.2)
+#     x_aug = spec_aug(x_spec, x_len)
+#     print("SpecAugment output shape:", x_aug.shape)
