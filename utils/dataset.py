@@ -34,7 +34,7 @@ class Vocab:
         return len(self.vocab)
 
 class Speech2Text(Dataset):
-    def __init__(self, json_path, vocab_path, cmvn_stats= None):
+    def __init__(self, json_path, vocab_path):
         super().__init__()
         self.data = load_json(json_path)
         self.vocab = Vocab(vocab_path)
