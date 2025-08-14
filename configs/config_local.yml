@@ -1,4 +1,12 @@
 model:
+  # Configuration for spec augment
+  spec_augment: true,
+  mF: 2,
+  F: 27,
+  mT: 5,
+  pS: 0.05
+
+  # Configuration for convolution downsampling 
 
   
 # Vivos

@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from activations import Swish
+import torchaudio
 
 class ConvDownsampling(nn.Module):
     def __init__(self, d_in, d_out, dropout=0.1):
@@ -40,10 +41,54 @@ class ConvDownsampling(nn.Module):
 
         return out
 
+class SpecAugment(nn.Module):
 
-if __name__ == "__main__":
-    # Example usage
-    model = ConvDownsampling(d_in=128, d_out=64)
-    x = torch.randn(32, 100, 128)  # (batch_size, seq_len, d_in)
-    output = model(x)
-    print(output.shape)  # Should be (32, 50, 64) after downsampling
+    """Spectrogram Augmentation
+
+    Args:
+        spec_augment: whether to apply spec augment
+        mF: number of frequency masks
+        F: maximum frequency mask size
+        mT: number of time masks
+        pS: adaptive maximum time mask size in %
+
+    References:
+        SpecAugment: A Simple Data Augmentation Method for Automatic Speech Recognition, Park et al.
+        https://arxiv.org/abs/1904.08779
+
+        SpecAugment on Large Scale Datasets, Park et al.
+        https://arxiv.org/abs/1912.05533
+
+    """
+
+    def __init__(self, spec_augment, mF, F, mT, pS):
+        super(SpecAugment, self).__init__()
+        self.spec_augment = spec_augment
+        self.mF = mF
+        self.F = F
+        self.mT = mT
+        self.pS = pS
+
+    def forward(self, x, x_len):
+
+        # Spec Augment
+        if self.spec_augment:
+        
+            # Frequency Masking
+            for _ in range(self.mF):
+                x = torchaudio.transforms.FrequencyMasking(freq_mask_param=self.F, iid_masks=False).forward(x)
+
+            # Time Masking
+            for b in range(x.size(0)):
+                T = int(self.pS * x_len[b])
+                for _ in range(self.mT):
+                    x[b:b+1, :, :x_len[b]] = torchaudio.transforms.TimeMasking(time_mask_param=T).forward(x[b:b+1, :, :x_len[b]])
+
+        return x
+
+# if __name__ == "__main__":
+#     # Example usage
+#     model = ConvDownsampling(d_in=128, d_out=64)
+#     x = torch.randn(32, 100, 128)  # (batch_size, seq_len, d_in)
+#     output = model(x)
+#     print(output.shape)  # Should be (32, 50, 64) after downsampling
